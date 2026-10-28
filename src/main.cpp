@@ -60,6 +60,9 @@ int main() {
   auto root = ui::WithTitleBarDrag(layout);
   Loop loop(&screen, root);
 
+  // FTXUI 切入 alt screen 后，再隐藏 conhost 的系统滚动条。
+  platform::HideConsoleScrollBars();
+
   // alt screen 已安装，首帧绘制尚未开始。
   platform::ResetCursor();
   loop.Run();

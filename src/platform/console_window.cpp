@@ -41,7 +41,8 @@ ConsoleWindow::ConsoleWindow() {
   const LONG_PTR style =
       original & ~static_cast<LONG_PTR>(WS_CAPTION | WS_SYSMENU |
                                         WS_THICKFRAME | WS_MINIMIZEBOX |
-                                        WS_MAXIMIZEBOX);
+                                        WS_MAXIMIZEBOX | WS_VSCROLL |
+                                        WS_HSCROLL);
   if (style == original) {
     return;
   }
@@ -58,6 +59,7 @@ ConsoleWindow::ConsoleWindow() {
   SetWindowPos(hwnd, nullptr, 0, 0, 0, 0,
                SWP_FRAMECHANGED | SWP_NOMOVE | SWP_NOSIZE |
                    SWP_NOZORDER | SWP_NOACTIVATE);
+  HideConsoleScrollBars();
 #endif
 }
 
@@ -76,6 +78,16 @@ ConsoleWindow::~ConsoleWindow() {
   if (input_mode_changed_) {
     SetConsoleMode(GetStdHandle(STD_INPUT_HANDLE),
                    static_cast<DWORD>(original_input_mode_));
+  }
+#endif
+}
+
+void HideConsoleScrollBars() {
+#if defined(_WIN32)
+  // conhost 的缓冲区可能大于可视窗口；仅隐藏滚动条，不裁剪历史缓冲区。
+  HWND hwnd = GetConsoleWindow();
+  if (hwnd != nullptr && IsWindowVisible(hwnd) != 0) {
+    ShowScrollBar(hwnd, SB_BOTH, FALSE);
   }
 #endif
 }

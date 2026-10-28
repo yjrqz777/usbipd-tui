@@ -27,6 +27,10 @@ class ConsoleWindow {
 // right_reserved_columns 保留给右侧关闭按钮；Windows Terminal 不处理。
 bool BeginTitleBarDrag(int mouse_column, int right_reserved_columns);
 
+// 隐藏传统 conhost 的滚动条，不改变屏幕缓冲区尺寸。
+// 在 FTXUI 初始化后调用一次，避免初始化过程重新显示滚动条。
+void HideConsoleScrollBars();
+
 // alt screen 安装完成后，在首次绘制前将光标归位。
 void ResetCursor();
 
