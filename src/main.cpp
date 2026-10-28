@@ -4,12 +4,10 @@
 // platform::ConsoleWindow 管理。顶栏绘制与拖动事件见 ui/top_bar.cpp。
 
 #include <atomic>
-#include <chrono>
 #include <cstdint>
+#include <functional>
 #include <string>
 #include <thread>
-
-#include "ftxui/component/event.hpp"
 
 #include "ftxui/component/app.hpp"
 #include "ftxui/component/component.hpp"
@@ -19,6 +17,7 @@
 #include "ftxui/screen/color.hpp"
 
 #include "platform/console_window.hpp"
+#include "value_ticker.hpp"
 #include "ui/top_bar.hpp"
 
 using namespace ftxui;
@@ -73,39 +72,8 @@ int main() {
   // alt screen 已安装，首帧绘制尚未开始。
   platform::ResetCursor();
 
-  // 每经过 1ms，value 增加 1；计数使用单调时钟补偿 Windows 定时器抖动。
-  // 终端只需要约 60Hz 的刷新，不应以 1kHz 重绘。
-  std::jthread ticker([&](std::stop_token stop) {
-    using Clock = std::chrono::steady_clock;
-    using namespace std::chrono_literals;
-
-    const auto start = Clock::now();
-    auto counted_ms = std::int64_t{0};
-    auto last_redraw = start;
-
-    while (!stop.stop_requested()) {
-      std::this_thread::sleep_for(1ms);
-      if (stop.stop_requested()) {
-        break;
-      }
-
-      const auto now = Clock::now();
-      const auto elapsed_ms =
-          std::chrono::duration_cast<std::chrono::milliseconds>(now - start).count();
-      if (elapsed_ms > counted_ms) {
-        value.fetch_add(elapsed_ms - counted_ms, std::memory_order_relaxed);
-        counted_ms = elapsed_ms;
-      }
-
-      if (now - last_redraw >= 16ms) {
-        last_redraw = now;
-        screen.PostEvent(Event::Custom);
-      }
-    }
-  });
-
+  // 计数线程由独立函数实现，jthread 析构时自动请求停止并等待退出。
+  std::jthread ticker(ValueTicker, std::ref(value), std::ref(screen));
   loop.Run();
-  ticker.request_stop();
-  ticker.join();
   return 0;
 }
