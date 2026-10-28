@@ -48,6 +48,14 @@ target_include_directories(${PROJECT_NAME} PRIVATE
 
 target_link_libraries(${PROJECT_NAME} PRIVATE ftxui::ftxui)
 
+# MinGW defaults to dynamically linked runtime libraries. Static linking avoids
+# requiring libwinpthread-1.dll, libgcc_s_*.dll or libstdc++-6.dll at runtime.
+if(MINGW)
+  target_link_options(${PROJECT_NAME} PRIVATE
+    -static -static-libgcc -static-libstdc++
+  )
+endif()
+
 if(MSVC)
   target_compile_options(${PROJECT_NAME} PRIVATE /W4 /utf-8)
 else()
