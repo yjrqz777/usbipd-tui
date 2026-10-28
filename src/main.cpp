@@ -17,7 +17,7 @@
 #include "ftxui/screen/color.hpp"
 
 #include "platform/console_window.hpp"
-#include "value_ticker.hpp"
+#include "ticker/value_ticker.hpp"
 #include "ui/top_bar.hpp"
 
 using namespace ftxui;
