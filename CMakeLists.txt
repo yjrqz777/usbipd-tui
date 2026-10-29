@@ -41,6 +41,7 @@ endfunction()
 
 usbipd_use_local_dep(FTXUI)
 usbipd_use_local_dep(spdlog)
+usbipd_use_local_dep(nlohmann_json)
 
 # FTXUI: build the libraries only. Skip its examples, docs, tests and C++20
 # module interface units, and do not emit install rules for it.
@@ -74,7 +75,17 @@ FetchContent_Declare(
   GIT_SHALLOW    TRUE
 )
 
-FetchContent_MakeAvailable(FTXUI spdlog)
+# nlohmann/json: header-only JSON library used to parse `usbipd state` output.
+set(JSON_BuildTests OFF CACHE BOOL "" FORCE)
+set(JSON_Install    OFF CACHE BOOL "" FORCE)
+FetchContent_Declare(
+  nlohmann_json
+  GIT_REPOSITORY https://github.com/nlohmann/json.git
+  GIT_TAG        v3.12.0
+  GIT_SHALLOW    TRUE
+)
+
+FetchContent_MakeAvailable(FTXUI spdlog nlohmann_json)
 
 # Keep a copy of freshly downloaded sources in third_party, so the next
 # configure finds them there and skips the download. The binaries stay in
@@ -104,6 +115,7 @@ endfunction()
 
 usbipd_cache_dep_sources(FTXUI "${ftxui_SOURCE_DIR}")
 usbipd_cache_dep_sources(spdlog "${spdlog_SOURCE_DIR}")
+usbipd_cache_dep_sources(nlohmann_json "${nlohmann_json_SOURCE_DIR}")
 
 # Every .cpp under src/ becomes part of the executable.
 file(GLOB_RECURSE APP_SOURCES CONFIGURE_DEPENDS
@@ -120,7 +132,11 @@ target_include_directories(${PROJECT_NAME} PRIVATE
   "${CMAKE_CURRENT_SOURCE_DIR}/src"
 )
 
-target_link_libraries(${PROJECT_NAME} PRIVATE ftxui::ftxui spdlog::spdlog)
+target_link_libraries(${PROJECT_NAME} PRIVATE
+  ftxui::ftxui
+  spdlog::spdlog
+  nlohmann_json::nlohmann_json
+)
 
 # MinGW defaults to dynamically linked runtime libraries. Static linking avoids
 # requiring libwinpthread-1.dll, libgcc_s_*.dll or libstdc++-6.dll at runtime.
