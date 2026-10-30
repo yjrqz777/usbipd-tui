@@ -1,3 +1,9 @@
-
-/FTXUI/*
-!/FTXUI/.gitkeep
+# Dependencies copied here by CMake (see usbipd_cache_dep_sources) are a build
+# cache, not something to commit.
+#
+# Ignore the directories themselves, not their contents: a nested .gitignore
+# (FTXUI ships one that ignores "*" and whitelists files back) would otherwise
+# win over a "/FTXUI/*" rule, because a deeper .gitignore takes precedence.
+# Git never descends into an excluded directory, so nested rules cannot apply.
+/FTXUI/
+/spdlog/
